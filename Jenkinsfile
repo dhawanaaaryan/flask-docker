@@ -15,13 +15,18 @@ pipeline {
             }
         }
 
-        stage("Clean Old Containers & Images") {
+        stage('Clean Old Containers & Images') {
             steps {
                 echo "🧹 Removing old containers and images..."
-                sh '''
-                docker ps -q --filter "name=${CONTAINER_NAME}" | xargs -r docker stop
-                docker ps -aq --filter "name=${CONTAINER_NAME}" | xargs -r docker rm
-                docker images -q ${IMAGE_NAME} | xargs -r docker rmi
+                bat '''
+                echo Listing containers...
+                docker ps -a
+
+                echo Removing containers...
+                for /f "tokens=*" %%i in ('docker ps -aq') do docker rm -f %%i
+
+                echo Removing images...
+                for /f "tokens=*" %%i in ('docker images -q') do docker rmi -f %%i
                 '''
             }
         }
@@ -29,15 +34,15 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 echo "⚙ Building Docker image..."
-                sh "docker build -t ${IMAGE_NAME}:latest ."
+                bat "docker build -t %IMAGE_NAME%:latest ."
             }
         }
 
         stage("Deploy Container") {
             steps {
                 echo "🚀 Deploying container..."
-                sh '''
-                docker run -d --name ${CONTAINER_NAME} -p ${PORT}:5000 ${IMAGE_NAME}:latest
+                bat '''
+                docker run -d --name %CONTAINER_NAME% -p %PORT%:5000 %IMAGE_NAME%:latest
                 '''
             }
         }
