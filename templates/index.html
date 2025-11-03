@@ -1,8 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head><title>Hello Aaryan</title></head>
-  <body>
-    <h1>Hello Aaryan</h1>
-    <p>This page served from Flask inside a Docker container.</p>
-  </body>
+<head>
+    <title>Simple Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        input, select, button {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <form method="POST">
+        <h2>🧮 Simple Calculator</h2>
+        <input type="number" step="any" name="num1" placeholder="Enter first number" required>
+        <input type="number" step="any" name="num2" placeholder="Enter second number" required>
+        <br>
+        <select name="operation">
+            <option value="add">Addition (+)</option>
+            <option value="subtract">Subtraction (−)</option>
+            <option value="multiply">Multiplication (×)</option>
+            <option value="divide">Division (÷)</option>
+        </select>
+        <br>
+        <button type="submit">Calculate</button>
+        <h3>
+            {% if result is not none %}
+                Result: {{ result }}
+            {% endif %}
+        </h3>
+    </form>
+</body>
 </html>
