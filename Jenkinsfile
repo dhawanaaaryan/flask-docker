@@ -1,5 +1,10 @@
 pipeline {
     agent any
+    
+    triggers {
+        githubPush()
+    }
+
 
     environment {
         IMAGE_NAME = "hello-flask"
@@ -15,17 +20,11 @@ pipeline {
             }
         }
 
-        stage('Clean Old Containers & Images') {
+        stage("Clean Old Containers & Images") {
             steps {
                 echo "🧹 Removing old containers and images..."
                 bat '''
-                echo Listing containers...
-                docker ps -a
-
-                echo Removing containers...
                 for /f "tokens=*" %%i in ('docker ps -aq') do docker rm -f %%i
-
-                echo Removing images...
                 for /f "tokens=*" %%i in ('docker images -q') do docker rmi -f %%i
                 '''
             }
@@ -38,9 +37,18 @@ pipeline {
             }
         }
 
+        stage("Run Tests with pytest") {
+            steps {
+                echo "🧪 Running pytest inside a temporary container..."
+                bat '''
+                docker run --rm %IMAGE_NAME%:latest pytest --maxfail=1 --disable-warnings -q
+                '''
+            }
+        }
+
         stage("Deploy Container") {
             steps {
-                echo "🚀 Deploying container..."
+                echo "🚀 Deploying Flask container..."
                 bat '''
                 docker run -d --name %CONTAINER_NAME% -p %PORT%:5000 %IMAGE_NAME%:latest
                 '''
@@ -50,10 +58,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful! Application is running at http://localhost:${PORT}"
+            echo "✅ Build & Deployment Successful! App running at http://localhost:${PORT}"
         }
         failure {
-            echo "❌ Deployment failed! Check Jenkins logs for details."
+            echo "❌ Build Failed! Check Jenkins logs for error details."
         }
     }
 }
